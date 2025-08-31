@@ -1,0 +1,12 @@
+# Node dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Docker volumes/data
+backend/uploads/
+backend/data/
+
+# System files
+.DS_Store
