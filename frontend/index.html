@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Image Gallery</title>
+</head>
+<body>
+  <h1>🖼️ Image Gallery</h1>
+
+  <h3>Add by URL:</h3>
+  <input id="urlInput" type="text" placeholder="Enter image URL" size="40" />
+  <button onclick="addImage()">Add Image</button>
+
+  <h3>Upload from Device:</h3>
+  <input id="fileInput" type="file" accept="image/*" />
+  <button onclick="uploadImage()">Upload Image</button>
+
+  <div id="gallery" style="display:flex; flex-wrap:wrap; margin-top:20px;"></div>
+
+  <script>
+    async function loadImages() {
+      const res = await fetch("http://localhost:5000/api/images");
+      const images = await res.json();
+
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      images.forEach((url, index) => {
+        const div = document.createElement("div");
+        div.style.margin = "10px";
+        div.style.textAlign = "center";
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.width = 200;
+
+        const btn = document.createElement("button");
+        btn.innerText = "Delete";
+        btn.style.marginTop = "5px";
+        btn.onclick = async () => {
+          await fetch(`http://localhost:5000/api/images/${index}`, { method: "DELETE" });
+          loadImages();
+        };
+
+        div.appendChild(img);
+        div.appendChild(document.createElement("br"));
+        div.appendChild(btn);
+
+        gallery.appendChild(div);
+      });
+    }
+
+    async function addImage() {
+      const url = document.getElementById("urlInput").value;
+      if (!url) return alert("Please enter an image URL");
+
+      await fetch("http://localhost:5000/api/images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+
+      document.getElementById("urlInput").value = "";
+      loadImages();
+    }
+
+    async function uploadImage() {
+      const fileInput = document.getElementById("fileInput");
+      if (!fileInput.files.length) return alert("Please choose a file");
+
+      const formData = new FormData();
+      formData.append("image", fileInput.files[0]);
+
+      await fetch("http://localhost:5000/api/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      fileInput.value = "";
+      loadImages();
+    }
+
+    loadImages();
+  </script>
+</body>
+</html>
